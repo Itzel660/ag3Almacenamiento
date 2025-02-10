@@ -3,23 +3,19 @@ import 'package:google_sign_in/google_sign_in.dart';
 
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
-  final GoogleSignIn _googleSignIn = GoogleSignIn(scopes: [
-    'https://www.googleapis.com/auth/contacts.readonly',
-  ]);
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
 
   Future<User?> signInWithGoogle() async {
     final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
     if (googleUser == null) return null;
 
-    final GoogleSignInAuthentication googleAuth =
-        await googleUser.authentication;
+    final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
     final AuthCredential credential = GoogleAuthProvider.credential(
       accessToken: googleAuth.accessToken,
       idToken: googleAuth.idToken,
     );
 
-    UserCredential userCredential =
-        await _auth.signInWithCredential(credential);
+    UserCredential userCredential = await _auth.signInWithCredential(credential);
     return userCredential.user;
   }
 
@@ -28,3 +24,4 @@ class AuthService {
     await _googleSignIn.signOut();
   }
 }
+

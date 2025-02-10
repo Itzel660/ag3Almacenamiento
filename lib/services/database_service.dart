@@ -2,15 +2,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/libro.dart';
 
 class DatabaseService {
-  final CollectionReference librosCollection = FirebaseFirestore.instance.collection('libros');
+  final FirebaseFirestore _db = FirebaseFirestore.instance;
 
-  Future<void> addLibro(Libro libro) async {
-    await librosCollection.add(libro.toJson());
-  }
-
+  // Obtener los libros desde Firestore
   Stream<List<Libro>> getLibros() {
-    return librosCollection.snapshots().map((snapshot) {
-      return snapshot.docs.map((doc) => Libro.fromJson(doc.data() as Map<String, dynamic>, doc.id)).toList();
-    });
+    return _db.collection('Libros')  // Aquí usamos el nombre correcto de la colección
+        .snapshots()
+        .map((snapshot) => snapshot.docs
+        .map((doc) => Libro.fromJson(doc.data() as Map<String, dynamic>, doc.id))  // Creamos el objeto Libro a partir del JSON
+        .toList());
   }
 }
+

@@ -1,58 +1,132 @@
-import 'package:flutter/material.dart';
-import '../services/database_service.dart';
-import '../services/storage_service.dart';
-import '../models/libro.dart';
 import 'dart:io';
+import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:firebase_storage/firebase_storage.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import '../models/libro.dart';
 
 class AddBookScreen extends StatefulWidget {
-  const AddBookScreen({super.key});
-
   @override
   _AddBookScreenState createState() => _AddBookScreenState();
 }
 
 class _AddBookScreenState extends State<AddBookScreen> {
-  String titulo = '';
-  String autor = '';
-  String descripcion = '';
-  File? imagen;
+  final TextEditingController tituloController = TextEditingController();
+  final TextEditingController autorController = TextEditingController();
+  final TextEditingController descripcionController = TextEditingController();
+  File? _image;
+  bool isUploading = false;
 
-  Future<void> pickImage() async {
-    final pickedFile =
-        await ImagePicker().pickImage(source: ImageSource.gallery);
+  Future<void> _pickImage() async {
+    final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
+
     if (pickedFile != null) {
-      setState(() => imagen = File(pickedFile.path));
+      setState(() {
+        _image = File(pickedFile.path);
+      });
     }
   }
 
-  Future<void> saveBook() async {
-    if (imagen == null) return;
-    String imageUrl = await StorageService().uploadImage(imagen!);
+  Future<String?> _uploadImage(File image) async {
+    try {
+      String fileName = DateTime.now().millisecondsSinceEpoch.toString();
+      Reference ref = FirebaseStorage.instance.ref().child('libros/$fileName');
+      UploadTask uploadTask = ref.putFile(image);
+
+      TaskSnapshot snapshot = await uploadTask;
+      return await snapshot.ref.getDownloadURL();
+    } catch (e) {
+      print("Error al subir la imagen: $e");
+      return null;
+    }
+  }
+
+  Future<void> _saveBook() async {
+    if (tituloController.text.isEmpty || _image == null) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Debe ingresar un título y seleccionar una imagen'),
+        backgroundColor: Colors.red,
+      ));
+      return;
+    }
+
+    setState(() {
+      isUploading = true;
+    });
+
+    String? imageUrl = await _uploadImage(_image!);
+    if (imageUrl == null) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Error al subir la imagen'),
+        backgroundColor: Colors.red,
+      ));
+      setState(() {
+        isUploading = false;
+      });
+      return;
+    }
+
     Libro libro = Libro(
-        id: '',
-        titulo: titulo,
-        autor: autor,
-        descripcion: descripcion,
-        imagenUrl: imageUrl);
-    await DatabaseService().addLibro(libro);
+      id: '',
+      titulo: tituloController.text,
+      autor: autorController.text,
+      descripcion: descripcionController.text,
+      imagenUrl: imageUrl,
+    );
+
+    await FirebaseFirestore.instance.collection('libros').add(libro.toJson());
+
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+      content: Text('Libro agregado con éxito'),
+      backgroundColor: Colors.green,
+    ));
+
+    setState(() {
+      isUploading = false;
+    });
+
     Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Agregar Libro')),
-      body: Column(
-        children: [
-          TextField(
-              onChanged: (val) => titulo = val,
-              decoration: const InputDecoration(labelText: 'Título')),
-          ElevatedButton(
-              onPressed: pickImage, child: const Text('Seleccionar Imagen')),
-          ElevatedButton(onPressed: saveBook, child: const Text('Guardar')),
-        ],
+      appBar: AppBar(title: Text('Agregar Libro')),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(
+              controller: tituloController,
+              decoration: InputDecoration(labelText: 'Título'),
+            ),
+            TextField(
+              controller: autorController,
+              decoration: InputDecoration(labelText: 'Autor'),
+            ),
+            TextField(
+              controller: descripcionController,
+              decoration: InputDecoration(labelText: 'Descripción'),
+            ),
+            SizedBox(height: 10),
+            _image != null
+                ? Image.file(_image!, height: 150, width: 150, fit: BoxFit.cover)
+                : Text('No se ha seleccionado imagen'),
+            ElevatedButton(
+              onPressed: _pickImage,
+              child: Text('Seleccionar Imagen'),
+            ),
+            SizedBox(height: 10),
+            isUploading
+                ? CircularProgressIndicator()
+                : ElevatedButton(
+              onPressed: _saveBook,
+              child: Text('Guardar'),
+            ),
+          ],
+        ),
       ),
     );
   }
 }
+
