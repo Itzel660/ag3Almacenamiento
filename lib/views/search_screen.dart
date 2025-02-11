@@ -34,7 +34,9 @@ class _SearchScreenState extends State<SearchScreen> {
           ),
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
-              stream: FirebaseFirestore.instance
+              stream: searchQuery.isEmpty
+                  ? FirebaseFirestore.instance.collection('libros').snapshots()
+                  : FirebaseFirestore.instance
                   .collection('libros')
                   .where('titulo', isGreaterThanOrEqualTo: searchQuery)
                   .where('titulo', isLessThanOrEqualTo: '$searchQuery\uf8ff')
@@ -58,3 +60,5 @@ class _SearchScreenState extends State<SearchScreen> {
     );
   }
 }
+
+

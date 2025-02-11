@@ -7,31 +7,39 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Catálogo de Libros')),
+      appBar: AppBar(
+        title: Text('Catálogo de Libros'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.search),
+            onPressed: () {
+              Navigator.pushNamed(context, '/search');  // Navega a la pantalla de búsqueda
+            },
+          ),
+        ],
+      ),
       body: StreamBuilder<List<Libro>>(
-        stream: DatabaseService().getLibros(),  // Obtenemos el stream de libros desde la base de datos
+        stream: DatabaseService().getLibros(),
         builder: (context, snapshot) {
-          // Si no hay datos, mostramos un indicador de carga
           if (!snapshot.hasData) {
             return Center(child: CircularProgressIndicator());
           }
 
-          // Si hay datos, los mostramos en una cuadrícula
           return GridView.builder(
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),  // Dos columnas
-            itemCount: snapshot.data!.length,  // El número de libros que se van a mostrar
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
+            itemCount: snapshot.data!.length,
             itemBuilder: (context, index) {
-              // Retornamos una tarjeta para cada libro
               return BookCard(libro: snapshot.data![index]);
             },
           );
         },
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: () => Navigator.pushNamed(context, '/add_book'),  // Para ir a la pantalla de agregar libro
+        onPressed: () => Navigator.pushNamed(context, '/add_book'),
         child: Icon(Icons.add),
       ),
     );
   }
 }
+
 

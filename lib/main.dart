@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'views/login_screen.dart';
 import 'views/home_screen.dart';
 import 'views/add_book_screen.dart';
+import 'views/search_screen.dart';  // 🚀 Asegúrate de importar esta pantalla
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,22 +21,24 @@ class MyApp extends StatelessWidget {
       routes: {
         '/home': (context) => HomeScreen(),
         '/add_book': (context) => AddBookScreen(),
+        '/search': (context) => SearchScreen(),  // 🚀 Agregamos la ruta de búsqueda
       },
       home: StreamBuilder<User?>(
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Center(child: CircularProgressIndicator());  // Mientras carga Firebase
+            return Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasData) {
-            return HomeScreen();  // Usuario autenticado
+            return HomeScreen();
           }
-          return LoginScreen();  // Usuario no autenticado
+          return LoginScreen();
         },
       ),
     );
   }
 }
+
 
 
 
