@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import '../models/libro.dart';
 
@@ -5,6 +6,28 @@ class BookDetailScreen extends StatelessWidget {
   final Libro libro;
 
   const BookDetailScreen({Key? key, required this.libro}) : super(key: key);
+
+  Widget _buildImage(String imageUrl) {
+    if (imageUrl.isEmpty) {
+      return Image.asset(
+        'assets/no-image.png',
+        height: 250,
+        fit: BoxFit.cover,
+      );
+    } else if (imageUrl.startsWith('http')) {
+      return Image.network(
+        imageUrl,
+        height: 250,
+        fit: BoxFit.cover,
+      );
+    } else {
+      return Image.file(
+        File(imageUrl),
+        height: 250,
+        fit: BoxFit.cover,
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,17 +41,7 @@ class BookDetailScreen extends StatelessWidget {
             Center(
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(15),
-                child: libro.imagenUrl.isNotEmpty
-                    ? Image.network(
-                  libro.imagenUrl,
-                  height: 250,
-                  fit: BoxFit.cover,
-                )
-                    : Image.asset(
-                  'assets/no-image.png',
-                  height: 250,
-                  fit: BoxFit.cover,
-                ),
+                child: _buildImage(libro.imagenUrl), // Usa la función corregida
               ),
             ),
             SizedBox(height: 20),
@@ -52,3 +65,4 @@ class BookDetailScreen extends StatelessWidget {
     );
   }
 }
+

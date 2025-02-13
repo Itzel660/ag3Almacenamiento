@@ -2,7 +2,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:firebase_storage/firebase_storage.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:path/path.dart' as path;
 import '../models/libro.dart';
 
 class AddBookScreen extends StatefulWidget {
@@ -19,27 +20,20 @@ class _AddBookScreenState extends State<AddBookScreen> {
   File? _image; // Imagen seleccionada desde la galería
   bool isUploading = false;
 
-  // Función para seleccionar una imagen de la galería
+  // Función para seleccionar una imagen y guardarla localmente
   Future<void> _pickImage() async {
     final pickedFile = await ImagePicker().pickImage(source: ImageSource.gallery);
     if (pickedFile != null) {
-      setState(() {
-        _image = File(pickedFile.path);
-      });
-    }
-  }
+      // Obtener el directorio de almacenamiento local
+      final directory = await getApplicationDocumentsDirectory();
+      final localImagePath = path.join(directory.path, path.basename(pickedFile.path));
 
-  // Función para subir la imagen a Firebase Storage
-  Future<String?> _uploadImage(File image) async {
-    try {
-      String fileName = DateTime.now().millisecondsSinceEpoch.toString();
-      Reference ref = FirebaseStorage.instance.ref().child('libros/$fileName');
-      UploadTask uploadTask = ref.putFile(image);
-      TaskSnapshot snapshot = await uploadTask;
-      return await snapshot.ref.getDownloadURL();
-    } catch (e) {
-      print("Error al subir la imagen: $e");
-      return null;
+      // Guardar la imagen localmente
+      final File localImage = await File(pickedFile.path).copy(localImagePath);
+
+      setState(() {
+        _image = localImage;
+      });
     }
   }
 
@@ -62,19 +56,9 @@ class _AddBookScreenState extends State<AddBookScreen> {
     if (imagenUrlController.text.isNotEmpty) {
       finalImageUrl = imagenUrlController.text;
     }
-    // Si no ingresó un link pero subió una imagen, subirla a Firebase Storage
+    // Si no ingresó un link pero seleccionó una imagen, usar la ruta local
     else if (_image != null) {
-      finalImageUrl = await _uploadImage(_image!);
-      if (finalImageUrl == null) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text('Error al subir la imagen'),
-          backgroundColor: Colors.red,
-        ));
-        setState(() {
-          isUploading = false;
-        });
-        return;
-      }
+      finalImageUrl = _image!.path;
     }
     // Si no hay imagen ni URL, mostrar error
     else {
@@ -88,13 +72,13 @@ class _AddBookScreenState extends State<AddBookScreen> {
       return;
     }
 
-    // Guardar en Firebase
+    // Guardar en Firebase Firestore
     Libro libro = Libro(
       id: '',
       titulo: tituloController.text,
       autor: autorController.text,
       descripcion: descripcionController.text,
-      imagenUrl: finalImageUrl,
+      imagenUrl: finalImageUrl, // Guarda la URL o la ruta local
     );
 
     await FirebaseFirestore.instance.collection('Libros').add(libro.toJson());
@@ -164,6 +148,7 @@ class _AddBookScreenState extends State<AddBookScreen> {
     );
   }
 }
+
 
 
 
