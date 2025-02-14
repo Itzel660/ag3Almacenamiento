@@ -13,15 +13,12 @@ class DatabaseService {
         .toList());
   }
 
-  // ✅ Nueva función para eliminar un libro
-  Future<void> deleteBook(String id) async {
-    try {
-      await _db.collection('Libros').doc(id).delete();
-      print("Libro eliminado con éxito");
-    } catch (e) {
-      print("Error al eliminar el libro: $e");
-    }
+
+  // 🔴 Nueva función para eliminar un libro
+  Future<void> deleteLibro(String libroId) async {
+  await _db.collection('Libros').doc(libroId).delete();
   }
-}
+  }
+
 
 
