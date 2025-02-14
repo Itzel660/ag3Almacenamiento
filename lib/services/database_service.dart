@@ -12,5 +12,16 @@ class DatabaseService {
         .map((doc) => Libro.fromJson(doc.data() as Map<String, dynamic>, doc.id))  // Creamos el objeto Libro a partir del JSON
         .toList());
   }
+
+  // ✅ Nueva función para eliminar un libro
+  Future<void> deleteBook(String id) async {
+    try {
+      await _db.collection('Libros').doc(id).delete();
+      print("Libro eliminado con éxito");
+    } catch (e) {
+      print("Error al eliminar el libro: $e");
+    }
+  }
 }
+
 
