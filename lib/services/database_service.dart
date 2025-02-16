@@ -9,12 +9,12 @@ class DatabaseService {
     return _db.collection('Libros')  // Aquí usamos el nombre correcto de la colección
         .snapshots()
         .map((snapshot) => snapshot.docs
-        .map((doc) => Libro.fromJson(doc.data() as Map<String, dynamic>, doc.id))  // Creamos el objeto Libro a partir del JSON
+        .map((doc) => Libro.fromJson(doc.data(), doc.id))  // Creamos el objeto Libro a partir del JSON
         .toList());
   }
 
 
-  // 🔴 Nueva función para eliminar un libro
+  //  Nueva función para eliminar un libro
   Future<void> deleteLibro(String libroId) async {
   await _db.collection('Libros').doc(libroId).delete();
   }

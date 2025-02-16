@@ -4,6 +4,8 @@ import '../models/libro.dart';
 import '../widgets/book_card.dart';
 
 class SearchScreen extends StatefulWidget {
+  const SearchScreen({super.key});
+
   @override
   _SearchScreenState createState() => _SearchScreenState();
 }

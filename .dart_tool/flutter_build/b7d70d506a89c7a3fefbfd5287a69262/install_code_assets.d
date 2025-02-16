@@ -1,0 +1,1 @@
+ C:\\Users\\so_ma\\CatalogoFB\\ag3Almacenamiento\\.dart_tool\\flutter_build\\b7d70d506a89c7a3fefbfd5287a69262\\native_assets.json: 

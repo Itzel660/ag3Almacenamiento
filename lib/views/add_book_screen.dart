@@ -7,6 +7,8 @@ import 'package:path/path.dart' as path;
 import '../models/libro.dart';
 
 class AddBookScreen extends StatefulWidget {
+  const AddBookScreen({super.key});
+
   @override
   _AddBookScreenState createState() => _AddBookScreenState();
 }

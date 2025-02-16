@@ -6,7 +6,7 @@ import '../services/database_service.dart';
 class BookDetailScreen extends StatelessWidget {
   final Libro libro;
 
-  const BookDetailScreen({Key? key, required this.libro}) : super(key: key);
+  const BookDetailScreen({super.key, required this.libro});
 
   void _deleteBook(BuildContext context) async {
     await DatabaseService().deleteLibro(libro.id);

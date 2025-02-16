@@ -6,7 +6,7 @@ import 'book_detail_screen.dart';
 class BookCard extends StatelessWidget {
   final Libro libro;
 
-  const BookCard({Key? key, required this.libro}) : super(key: key);
+  const BookCard({super.key, required this.libro});
 
   Widget _buildImage(String imageUrl) {
     if (imageUrl.isEmpty) {
